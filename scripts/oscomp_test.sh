@@ -58,9 +58,9 @@ lua_testlist=("/$LIBC/busybox sh /$LIBC/lua_testcode.sh")
 libctest_testlist=("/$LIBC/runtest.exe -w entry-static.exe utime")
 
 testcases_type=(
-    # "basic"
-    # "busybox"
-    # "lua"
+    "basic"
+    "busybox"
+    "lua"
     "libctest"
 )
 
