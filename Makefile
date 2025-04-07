@@ -1,8 +1,12 @@
 AX_ROOT ?= $(PWD)/.arceos
 AX_TESTCASE ?= nimbos
 ARCH ?= x86_64
+LOG ?= off
 AX_TESTCASES_LIST=$(shell cat ./apps/$(AX_TESTCASE)/testcase_list | tr '\n' ',')
 FEATURES ?= fp_simd
+
+export NO_AXSTD := y
+export AX_LIB := axfeat
 
 RUSTDOCFLAGS := -Z unstable-options --enable-index-page -D rustdoc::broken_intra_doc_links -D missing-docs
 EXTRA_CONFIG ?= $(PWD)/configs/$(ARCH).toml
@@ -33,10 +37,9 @@ else
   $(error ARCH must be one of x86_64, aarch64, riscv64, loongarch64)
 endif
 
-all:
-	# Build for os competition
-	RUSTUP_TOOLCHAIN=nightly-2025-01-18 $(MAKE) test_build ARCH=riscv64 AX_TESTCASE=oscomp BUS=mmio  FEATURES=lwext4_rs 
-	RUSTUP_TOOLCHAIN=nightly-2025-01-18 $(MAKE) test_build ARCH=loongarch64 AX_TESTCASE=oscomp FEATURES=lwext4_rs
+include scripts/make/oscomp.mk
+
+all: oscomp_build
 
 # export dummy config for clippy
 clippy: defconfig
@@ -55,20 +58,8 @@ user_apps:
 	fi
 	@mv ./disk.img $(AX_ROOT)/disk.img
 
-test:
+test: defconfig
 	@./scripts/app_test.sh
-
-oscomp_test:
-	@./scripts/oscomp_test.sh
-
-test_build: ax_root defconfig
-	@cp -r $(PWD)/bin/* /root/.cargo/bin
-	@make -C $(AX_ROOT) A=$(PWD) EXTRA_CONFIG=$(EXTRA_CONFIG) build
-	@if [ "$(ARCH)" = "riscv64" ]; then \
-		cp $(OUT_BIN) kernel-rv; \
-	else \
-		cp $(OUT_ELF) kernel-la; \
-	fi
 
 defconfig build run justrun debug disasm: ax_root
 	@make -C $(AX_ROOT) A=$(PWD) EXTRA_CONFIG=$(EXTRA_CONFIG) $@
@@ -80,7 +71,7 @@ clean: ax_root
 	done
 	@cargo clean
 
-doc_check_missing:
-	@cargo doc --no-deps --all-features --workspace
+doc: defconfig
+	@AX_CONFIG_PATH=$(PWD)/.axconfig.toml cargo doc --no-deps --all-features --workspace
 
 .PHONY: all ax_root build run justrun debug disasm clean test_build

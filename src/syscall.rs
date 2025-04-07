@@ -1,56 +1,11 @@
-mod fs;
-mod mm;
-mod signal;
-mod sys;
-mod task;
-mod utils;
-
-use crate::task::{time_stat_from_kernel_to_user, time_stat_from_user_to_kernel};
 use axerrno::{LinuxError, LinuxResult};
 use axhal::{
     arch::TrapFrame,
     trap::{SYSCALL, register_trap_handler},
 };
+use starry_api::*;
+use starry_core::task::{time_stat_from_kernel_to_user, time_stat_from_user_to_kernel};
 use syscalls::Sysno;
-
-use self::fs::*;
-use self::mm::*;
-use self::signal::*;
-use self::sys::*;
-use self::task::*;
-use self::utils::*;
-
-macro_rules! syscall_instrument {(
-    $( #[$attr:meta] )*
-    $pub:vis
-    fn $fname:ident (
-        $( $arg_name:ident : $ArgTy:ty ),* $(,)?
-    ) -> $RetTy:ty
-    $body:block
-) => (
-    $( #[$attr] )*
-    #[allow(unused_parens)]
-    $pub
-    fn $fname (
-        $( $arg_name : $ArgTy ),*
-    ) -> $RetTy
-    {
-        /// Re-emit the original function definition, but as a scoped helper
-        $( #[$attr] )*
-        fn __original_func__ (
-            $($arg_name: $ArgTy),*
-        ) -> $RetTy
-        $body
-
-        let res = __original_func__($($arg_name),*);
-        match res {
-            Ok(_) | Err(axerrno::LinuxError::EAGAIN) => debug!(concat!(stringify!($fname), " => {:?}"),  res),
-            Err(_) => info!(concat!(stringify!($fname), " => {:?}"), res),
-        }
-        res
-    }
-)}
-pub(crate) use syscall_instrument;
 
 fn ignore_unimplemented_syscall(syscall_num: usize) -> LinuxResult<isize> {
     warn!("Ignored unimplemented syscall: {}", syscall_num);
@@ -117,13 +72,13 @@ fn handle_syscall(tf: &TrapFrame, syscall_num: usize) -> isize {
         Sysno::uname => sys_uname(tf.arg0().into()),
         Sysno::fstat => sys_fstat(tf.arg0() as _, tf.arg1().into()),
         Sysno::mount => sys_mount(
-            tf.arg0() as _,
-            tf.arg1() as _,
-            tf.arg2() as _,
+            tf.arg0().into(),
+            tf.arg1().into(),
+            tf.arg2().into(),
             tf.arg3() as _,
-            tf.arg4() as _,
+            tf.arg4().into(),
         ) as _,
-        Sysno::umount2 => sys_umount2(tf.arg0() as _, tf.arg1() as _) as _,
+        Sysno::umount2 => sys_umount2(tf.arg0().into(), tf.arg1() as _) as _,
         Sysno::utimensat => sys_utimensat(
             tf.arg0() as _,
             tf.arg1().into(),
@@ -173,9 +128,9 @@ fn handle_syscall(tf: &TrapFrame, syscall_num: usize) -> isize {
             tf.arg2().into(),
             tf.arg3() as _,
         ),
-        Sysno::gettid | Sysno::statfs | Sysno::rt_sigtimedwait | Sysno::prlimit64 => {
+        Sysno::gettid | Sysno::statfs | Sysno::rt_sigtimedwait | Sysno::prlimit64 | Sysno::fork | Sysno::unlink => {
             ignore_unimplemented_syscall(syscall_num)
-        }
+        },
         _ => {
             warn!("Unimplemented syscall: {}", syscall_num);
             axtask::exit(LinuxError::ENOSYS as _)

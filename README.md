@@ -23,6 +23,7 @@ Create a container and build/run app:
 cd ..
 docker run --privileged --rm -it -v $(pwd):/starry -w /starry starry bash
 
+
 # Now build/run app in the container
 make user_apps
 make defconfig
@@ -140,6 +141,91 @@ make ARCH=x86_64 LOG=info AX_TESTCASE=nimbos run
 
 Note: Arguments like `NET`, `BLK`, and `GRAPHIC` enable devices in QEMU, which take effect only at runtime, not at build time. More features can be found in the [Cargo.toml of arceos](https://github.com/oscomp/arceos/blob/main/ulib/axstd/Cargo.toml).
 
+#### Development with Visual Studio Code
+
+Since ArceOS relies on special build scripts and some environment variables, this usually causes `rust-analyzer` to prompt some annoying errors. You may want to put the following configuration into `.vscode/settings.json` (ie workspace settings):
+```json
+{
+  "rust-analyzer.cargo.extraEnv": {
+    "AX_CONFIG_PATH": "${workspaceFolder}/.axconfig.toml"
+  }
+}
+```
+
 ## Test for oscomp testcases
 
-We can run [testcases of the OS competition](https://github.com/oscomp/testsuits-for-oskernel/tree/pre-2025) with StarryOS. Guidence can be found in [Starry-Tutorial](https://azure-stars.github.io/Starry-Tutorial-Book/ch01-04.html#在-os-比赛上测试-starry).
+We can run [testcases of the OS competition](https://github.com/oscomp/testsuits-for-oskernel/tree/pre-2025) with StarryOS. Guidence can be found in [Starry-Tutorial](https://azure-stars.github.io/Starry-Tutorial-Book/ch03-02.html). 
+
+
+And you can run the testcases with the following commands:
+
+```bash
+# Clone the base repository
+./scripts/get_deps.sh
+
+# run the testcases of oscomp on x86_64
+$ make oscomp_run ARCH=x86_64   # If it reports an error: -accel kvm: failed to initialize kvm: Permission denied, please add `ACCEL=n` argument.
+
+# run the testcases of oscomp on riscv64
+$ make oscomp_run ARCH=riscv64
+
+# run the testcases of oscomp on aarch64
+$ make oscomp_run ARCH=aarch64
+
+# run the testcases of oscomp on loongarch64
+$ make oscomp_run ARCH=loongarch64
+```
+
+To run more testcases from oscomp, you can refer to the [oscomp README](./apps/oscomp/README.md).
+
+## How to add new testcases
+
+To allow the kernel to run user-written test cases, temporary test cases can be created. 
+
+
+If you want to add source codes of the testcases, you can refer to the [libc testcases](./apps/libc) and add your source codes in the [c testcase](./apps/libc/c/) folder, and append the [testcase_list](./apps/libc/testcase_list) with your testcase name. Then you can run the testcases with the following commands:
+
+```sh
+make AX_TESTCASE=libc user_apps ARCH=$(YOUR_ARCH)
+make AX_TESTCASE=libc BLK=y NET=y FEATURES=fp_simd ACCEL=n run ARCH=$(YOUR_ARCH)
+```
+
+If you want to add **executable file** directly, the specific steps are as follows:
+
+   1. Create a temporary test case folder
+
+      ```sh
+      cd apps && mkdir custom && cd custom
+      ```
+
+   2. Create a `Makefile` in the current directory and fill in the following content:
+
+      ```makefile
+      all: build
+
+      build:
+
+      clean:
+          rm -rf *.out
+      ```
+
+      The reason for creating an empty build `Makefile` is that when Starry packages test case images, it will first execute the test case's build program by default. However, since our temporary test case does not currently have a defined build program, `make all` does not need to perform any operations.
+
+   3. Copy your **executable file** into the current directory.
+
+   4. Create a `testcase_list` file in the current directory and add the relative path of the executable file that needs to be executed. Note that this path should be relative to `apps/custom` (i.e., the current directory). In our example, the content should be:
+
+      ```sh
+      hello
+      ```
+
+   5. Return to the project root directory and run the following command:
+
+      ```sh
+      sudo ./build_img.sh -fs ext4 -file apps/custom
+      cp disk.img .arceos/disk.img
+      make defconfig
+      make AX_TESTCASE=custom ARCH=x86_64 BLK=y NET=y FEATURES=fp_simd,lwext4_rs LOG=off ACCEL=n run
+      ```
+
+      This completes the execution of the custom test case.
