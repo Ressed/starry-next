@@ -1,3 +1,1 @@
-brk
-chdir
-clone
+/musl/runtest.exe -w entry-dynamic.exe rewind_clear_error
