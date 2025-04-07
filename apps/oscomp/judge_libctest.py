@@ -22,7 +22,7 @@ def parse_libctest(output):
         if key in bypass_testkey:
             ans[key] = 1
             continue
-        if line == "Pass!" and key != "":
+        if line.startswith("Pass!") and key != "":
             ans[key] = 1
     return ans
 
