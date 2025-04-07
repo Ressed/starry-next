@@ -1,3 +1,0 @@
-[submodule ".arceos"]
-	path = .arceos
-	url = git@github.com:Ressed/arceos.git
