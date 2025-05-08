@@ -135,7 +135,7 @@ fn handle_syscall(tf: &mut TrapFrame, syscall_num: usize) -> isize {
         ),
         #[cfg(target_arch = "x86_64")]
         Sysno::unlink => ignore_unimplemented_syscall(syscall_num),
-        Sysno::gettid | Sysno::statfs | Sysno::prlimit64 => {
+        Sysno::statfs | Sysno::prlimit64 => {
             ignore_unimplemented_syscall(syscall_num)
         },
         Sysno::rt_sigpending => sys_rt_sigpending(tf.arg0().into(), tf.arg1() as _),

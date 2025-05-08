@@ -68,7 +68,7 @@ basic_testlist=(
 busybox_testlist=("/$LIBC/busybox sh /$LIBC/busybox_testcode.sh")
 iozone_testlist=("/$LIBC/busybox sh /$LIBC/iozone_testcode.sh")
 lua_testlist=("/$LIBC/busybox sh /$LIBC/lua_testcode.sh")
-libctest_testlist=("/$LIBC/runtest.exe -w entry-static.exe utime")
+libctest_testlist=("/$LIBC/busybox sh /$LIBC/libctest_testcode.sh")
 
 testcases_type=(
     "basic"
