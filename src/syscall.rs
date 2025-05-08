@@ -7,7 +7,7 @@ use starry_api::*;
 use starry_core::task::{time_stat_from_kernel_to_user, time_stat_from_user_to_kernel};
 use syscalls::Sysno;
 
-fn ignore_unimplemented_syscall(syscall_num: usize) -> LinuxResult<isize> {
+fn ignore_unimplemented_syscall(syscall_num: usize) -> Result<isize, LinuxError> {
     warn!("Ignored unimplemented syscall: {}", syscall_num);
     Ok(0)
 }
@@ -42,8 +42,6 @@ fn handle_syscall(tf: &mut TrapFrame, syscall_num: usize) -> isize {
         Sysno::dup => sys_dup(tf.arg0() as _),
         Sysno::dup3 => sys_dup3(tf.arg0() as _, tf.arg1() as _),
         Sysno::fcntl => sys_fcntl(tf.arg0() as _, tf.arg1() as _, tf.arg2() as _),
-        #[cfg(target_arch = "x86_64")]
-        Sysno::fork => sys_clone(17 /* SIGCHLD */, 0, 0, 0, 0),
         Sysno::clone => sys_clone(
             tf,
             tf.arg0() as _,
