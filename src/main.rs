@@ -6,6 +6,8 @@
 extern crate axlog;
 extern crate alloc;
 
+use alloc::vec::Vec;
+
 mod entry;
 mod mm;
 mod syscall;
@@ -18,11 +20,13 @@ fn main() {
     // Create a init process
     axprocess::Process::new_init(axtask::current().id().as_u64() as _).build();
 
-    let testcases = option_env!("AX_TESTCASES_LIST")
+    let testcases: Vec<_> = option_env!("AX_TESTCASES_LIST")
         .unwrap_or_else(|| "Please specify the testcases list by making user_apps")
         .split(',')
-        .filter(|&x| !x.is_empty());
+        .filter(|&x| !x.is_empty())
+        .collect();
     let mut i = 0;
+    let n = testcases.len();
     for testcase in testcases {
         let Some(args) = shlex::split(testcase) else {
             error!("Failed to parse testcase: {:?}", testcase);
@@ -40,7 +44,7 @@ fn main() {
             ax_println!("#### OS COMP TEST GROUP END basic-glibc ####");
             ax_println!("#### OS COMP TEST GROUP START libctest-glibc ####");
             ax_println!("#### OS COMP TEST GROUP START libctest-musl ####");
-        } else if i == 207 {
+        } else if i == n {
             ax_println!("#### OS COMP TEST GROUP END libctest-musl ####");
             ax_println!("#### OS COMP TEST GROUP END libctest-glibc ####");
         }
