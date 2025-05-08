@@ -1,5 +1,5 @@
 use alloc::{string::String, sync::Arc};
-use arceos_posix_api::FD_TABLE;
+use starry_api::fd::FD_TABLE;
 use axfs::{CURRENT_DIR, CURRENT_DIR_PATH, api::set_current_dir};
 use axhal::arch::UspaceContext;
 use axprocess::{Pid, init_proc};

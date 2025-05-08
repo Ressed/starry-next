@@ -1,5 +1,4 @@
 use alloc::sync::Arc;
-use arceos_posix_api::FD_TABLE;
 use axerrno::{LinuxError, LinuxResult};
 use axfs::{CURRENT_DIR, CURRENT_DIR_PATH};
 use axhal::arch::{TrapFrame, UspaceContext};
@@ -14,7 +13,7 @@ use starry_core::{
     task::{ProcessData, TaskExt, ThreadData, add_thread_to_table, new_user_task},
 };
 
-use crate::ptr::{PtrWrapper, UserPtr};
+use crate::{fd::FD_TABLE, ptr::PtrWrapper, ptr::UserPtr};
 
 bitflags! {
     /// Options for use with [`sys_clone`].

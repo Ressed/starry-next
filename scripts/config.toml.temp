@@ -10,3 +10,4 @@ axmm = { path = "%AX_ROOT%/modules/axmm" }
 axns = { path = "%AX_ROOT%/modules/axns" }
 axsync = { path = "%AX_ROOT%/modules/axsync" }
 axtask = { path = "%AX_ROOT%/modules/axtask" }
+axruntime = { path = "%AX_ROOT%/modules/axruntime" }

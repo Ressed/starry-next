@@ -183,6 +183,30 @@ impl<T> UserPtr<T> {
         // SAFETY: We've validated the memory region.
         unsafe { Ok(slice::from_raw_parts_mut(ptr as *mut _, len)) }
     }
+
+    const ACCESS_FLAGS: MappingFlags = MappingFlags::READ.union(MappingFlags::WRITE);
+
+    pub fn address(&self) -> VirtAddr {
+        VirtAddr::from_ptr_of(self.0)
+    }
+
+    pub fn is_null(&self) -> bool {
+        self.0.is_null()
+    }
+
+    pub fn get_as_mut(self) -> LinuxResult<&'static mut T> {
+        check_region(self.address(), Layout::new::<T>(), Self::ACCESS_FLAGS)?;
+        Ok(unsafe { &mut *self.0 })
+    }
+
+    pub fn get_as_mut_slice(self, len: usize) -> LinuxResult<&'static mut [T]> {
+        check_region(
+            self.address(),
+            Layout::array::<T>(len).unwrap(),
+            Self::ACCESS_FLAGS,
+        )?;
+        Ok(unsafe { core::slice::from_raw_parts_mut(self.0, len) })
+    }
 }
 
 /// An immutable pointer to user space memory.
@@ -212,6 +236,30 @@ impl<T> PtrWrapper<T> for UserConstPtr<T> {
 }
 
 impl<T> UserConstPtr<T> {
+    const ACCESS_FLAGS: MappingFlags = MappingFlags::READ;
+
+    pub fn address(&self) -> VirtAddr {
+        VirtAddr::from_ptr_of(self.0)
+    }
+
+    pub fn is_null(&self) -> bool {
+        self.0.is_null()
+    }
+
+    pub fn get_as_ref(self) -> LinuxResult<&'static T> {
+        check_region(self.address(), Layout::new::<T>(), Self::ACCESS_FLAGS)?;
+        Ok(unsafe { &*self.0 })
+    }
+
+    pub fn get_as_slice(self, len: usize) -> LinuxResult<&'static [T]> {
+        check_region(
+            self.address(),
+            Layout::array::<T>(len).unwrap(),
+            Self::ACCESS_FLAGS,
+        )?;
+        Ok(unsafe { core::slice::from_raw_parts(self.0, len) })
+    }
+    
     /// Get the pointer as `&[T]`, terminated by a null value, validating the
     /// memory region.
     pub fn get_as_null_terminated(self) -> LinuxResult<&'static [T]>
@@ -236,3 +284,14 @@ impl UserConstPtr<c_char> {
         str::from_utf8(slice).map_err(|_| LinuxError::EILSEQ)
     }
 }
+
+macro_rules! nullable {
+    ($ptr:ident.$func:ident($($arg:expr),*)) => {
+        if $ptr.is_null() {
+            Ok(None)
+        } else {
+            Some($ptr.$func($($arg),*)).transpose()
+        }
+    };
+}
+pub(crate) use nullable;

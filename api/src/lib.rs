@@ -5,6 +5,9 @@
 extern crate axlog;
 extern crate alloc;
 
+pub mod fd;
+pub mod path;
+pub mod times;
 mod imp;
 mod ptr;
 

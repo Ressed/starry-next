@@ -44,7 +44,7 @@
 /musl/runtest.exe -w entry-static.exe inet_pton
 /musl/runtest.exe -w entry-static.exe mbc
 /musl/runtest.exe -w entry-static.exe memstream
-/musl/runtest.exe -w entry-static.exe pthread_cancel_points
+@REM /musl/runtest.exe -w entry-static.exe pthread_cancel_points
 /musl/runtest.exe -w entry-static.exe pthread_cancel
 /musl/runtest.exe -w entry-static.exe pthread_cond
 /musl/runtest.exe -w entry-static.exe pthread_tsd

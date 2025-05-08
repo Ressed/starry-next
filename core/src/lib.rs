@@ -10,4 +10,4 @@ extern crate alloc;
 
 pub mod mm;
 pub mod task;
-mod time;
+pub mod time;

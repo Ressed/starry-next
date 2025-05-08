@@ -1,7 +1,7 @@
 use core::{mem, time::Duration};
 
 use alloc::sync::Arc;
-use arceos_posix_api::ctypes::timespec;
+use linux_raw_sys::general::timespec;
 use axerrno::{LinuxError, LinuxResult};
 use axprocess::{Pid, Process, ProcessGroup, Thread};
 use linux_raw_sys::general::{
@@ -21,6 +21,7 @@ use axsignal::{SignalInfo, SignalOSAction, SignalSet, SignalStack, Signo};
 use axtask::{TaskExtRef, current};
 
 use super::do_exit;
+
 
 fn check_signals(tf: &mut TrapFrame, restore_blocked: Option<SignalSet>) -> bool {
     let Some((sig, os_action)) = current()
@@ -301,7 +302,7 @@ pub fn sys_rt_sigtimedwait(
     let set = unsafe { *set.get()? };
     let timeout: Option<Duration> = timeout
         .nullable(UserConstPtr::get)?
-        .map(|ts| unsafe { *ts }.into());
+        .map(|ts| Duration::new(unsafe { *ts }.tv_sec as u64, unsafe { *ts }.tv_nsec as u32));
 
     let Some(sig) = current()
         .task_ext()
