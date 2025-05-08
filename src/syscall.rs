@@ -70,6 +70,7 @@ fn handle_syscall(tf: &mut TrapFrame, syscall_num: usize) -> isize {
         Sysno::fork => sys_fork(tf),
         Sysno::wait4 => sys_waitpid(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
         Sysno::pipe2 => sys_pipe(tf.arg0().into()),
+        Sysno::pipe => sys_pipe(tf.arg0().into()),
         Sysno::close => sys_close(tf.arg0() as _),
         Sysno::chdir => sys_chdir(tf.arg0().into()),
         Sysno::mkdirat => sys_mkdirat(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
@@ -92,6 +93,8 @@ fn handle_syscall(tf: &mut TrapFrame, syscall_num: usize) -> isize {
         ),
         Sysno::unlinkat => sys_unlinkat(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
         Sysno::uname => sys_uname(tf.arg0().into()),
+        #[cfg(target_arch = "x86_64")]
+        Sysno::stat => sys_stat(tf.arg0().into(), tf.arg1().into()),
         Sysno::fstat => sys_fstat(tf.arg0() as _, tf.arg1().into()),
         Sysno::mount => sys_mount(
             tf.arg0().into(),
@@ -137,6 +140,9 @@ fn handle_syscall(tf: &mut TrapFrame, syscall_num: usize) -> isize {
         Sysno::set_tid_address => sys_set_tid_address(tf.arg0()),
         Sysno::clock_gettime => sys_clock_gettime(tf.arg0() as _, tf.arg1().into()),
         Sysno::getuid => sys_getuid(),
+        Sysno::geteuid => sys_geteuid(),
+        Sysno::getgid => sys_getgid(),  
+        Sysno::getegid => sys_getegid(),
         Sysno::rt_sigprocmask => sys_rt_sigprocmask(
             tf.arg0() as _,
             tf.arg1().into(),

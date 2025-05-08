@@ -6,6 +6,18 @@ pub fn sys_getuid() -> LinuxResult<isize> {
     Ok(0)
 }
 
+pub fn sys_geteuid() -> LinuxResult<isize> {
+    Ok(1)
+}
+
+pub fn sys_getgid() -> LinuxResult<isize> {
+    Ok(0)
+}
+
+pub fn sys_getegid() -> LinuxResult<isize> {
+    Ok(1)
+}
+
 #[repr(C)]
 pub struct UtsName {
     /// sysname
