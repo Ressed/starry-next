@@ -28,6 +28,9 @@ fn main() {
     let mut i = 0;
     let n = testcases.len();
     for testcase in testcases {
+        if testcase.starts_with('#') {
+            continue;
+        }
         let Some(args) = shlex::split(testcase) else {
             error!("Failed to parse testcase: {:?}", testcase);
             continue;
