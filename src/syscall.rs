@@ -70,6 +70,7 @@ fn handle_syscall(tf: &mut TrapFrame, syscall_num: usize) -> isize {
         Sysno::fork => sys_fork(tf),
         Sysno::wait4 => sys_waitpid(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
         Sysno::pipe2 => sys_pipe(tf.arg0().into()),
+        #[cfg(target_arch = "x86_64")]
         Sysno::pipe => sys_pipe(tf.arg0().into()),
         Sysno::close => sys_close(tf.arg0() as _),
         Sysno::chdir => sys_chdir(tf.arg0().into()),
