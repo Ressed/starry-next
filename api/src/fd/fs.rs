@@ -52,6 +52,8 @@ impl FileLike for File {
             size: metadata.size(),
             blocks: metadata.blocks(),
             blksize: 512,
+            atime: metadata.atime(),
+            mtime: metadata.mtime(),
             ..Default::default()
         })
     }
@@ -69,6 +71,14 @@ impl FileLike for File {
 
     fn set_nonblocking(&self, _nonblocking: bool) -> LinuxResult {
         Ok(())
+    }
+
+    fn set_atime(&self, atime: usize) -> LinuxResult {
+        Ok(self.inner.lock().set_atime(atime)?)
+    }
+
+    fn set_mtime(&self, mtime: usize) -> LinuxResult {
+        Ok(self.inner.lock().set_mtime(mtime)?)
     }
 }
 

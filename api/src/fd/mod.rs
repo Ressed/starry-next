@@ -10,7 +10,7 @@ use axerrno::{LinuxError, LinuxResult};
 use axio::PollState;
 use axns::{ResArc, def_resource};
 use flatten_objects::FlattenObjects;
-use linux_raw_sys::general::{stat, statx};
+use linux_raw_sys::general::{stat, statx, statx_timestamp};
 use spin::RwLock;
 
 pub use self::{
@@ -31,6 +31,8 @@ pub struct Kstat {
     size: u64,
     blocks: u64,
     blksize: u32,
+    atime: usize,
+    mtime: usize,
 }
 
 impl Default for Kstat {
@@ -44,6 +46,8 @@ impl Default for Kstat {
             size: 0,
             blocks: 0,
             blksize: 4096,
+            atime: 0,
+            mtime: 0,
         }
     }
 }
@@ -60,6 +64,8 @@ impl From<Kstat> for stat {
         stat.st_size = value.size as _;
         stat.st_blksize = value.blksize as _;
         stat.st_blocks = value.blocks as _;
+        stat.st_atime = value.atime as _;
+        stat.st_mtime = value.mtime as _;
 
         stat
     }
@@ -78,6 +84,16 @@ impl From<Kstat> for statx {
         statx.stx_ino = value.ino as _;
         statx.stx_size = value.size as _;
         statx.stx_blocks = value.blocks as _;
+        statx.stx_atime = statx_timestamp {
+            tv_sec: value.atime as _,
+            tv_nsec: 0,
+            __reserved: 0,
+        };
+        statx.stx_mtime = statx_timestamp {
+            tv_sec: value.mtime as _,
+            tv_nsec: 0,
+            __reserved: 0,
+        };
 
         statx
     }
@@ -107,6 +123,12 @@ pub trait FileLike: Send + Sync {
         Self: Sized + 'static,
     {
         add_file_like(Arc::new(self))
+    }
+    fn set_atime(&self, _atime: usize) -> LinuxResult {
+        unimplemented!("set_atime of FileLike")
+    }
+    fn set_mtime(&self, _mtime: usize) -> LinuxResult {
+        unimplemented!("set_mtime of FileLike")
     }
 }
 

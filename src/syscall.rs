@@ -19,7 +19,22 @@ fn handle_syscall(tf: &mut TrapFrame, syscall_num: usize) -> isize {
     time_stat_from_user_to_kernel();
     let result = match sysno {
         Sysno::read => sys_read(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
+        Sysno::readv => sys_readv(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
         Sysno::write => sys_write(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
+        Sysno::writev => sys_writev(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
+        Sysno::pread64 => sys_pread64(
+            tf.arg0() as _,
+            tf.arg1().into(),
+            tf.arg2() as _,
+            tf.arg3() as _,
+        ),
+        Sysno::sendfile => sys_sendfile(
+            tf.arg0() as _,
+            tf.arg1() as _,
+            tf.arg2().into(),
+            tf.arg3() as _,
+        ),
+        
         Sysno::mmap => sys_mmap(
             tf.arg0().into(),
             tf.arg1() as _,
@@ -29,7 +44,6 @@ fn handle_syscall(tf: &mut TrapFrame, syscall_num: usize) -> isize {
             tf.arg5() as _,
         ),
         Sysno::ioctl => sys_ioctl(tf.arg0() as _, tf.arg1() as _, tf.arg2().into()),
-        Sysno::writev => sys_writev(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
         Sysno::sched_yield => sys_sched_yield(),
         Sysno::nanosleep => sys_nanosleep(tf.arg0().into(), tf.arg1().into()),
         Sysno::getpid => sys_getpid(),
@@ -87,12 +101,12 @@ fn handle_syscall(tf: &mut TrapFrame, syscall_num: usize) -> isize {
             tf.arg4().into(),
         ) as _,
         Sysno::umount2 => sys_umount2(tf.arg0().into(), tf.arg1() as _) as _,
-        // Sysno::utimensat => sys_utimensat(
-        //     tf.arg0() as _,
-        //     tf.arg1().into(),
-        //     tf.arg2().into(),
-        //     tf.arg3() as _,
-        // ),
+        Sysno::utimensat => sys_utimensat(
+            tf.arg0() as _,
+            tf.arg1().into(),
+            tf.arg2().into(),
+            tf.arg3() as _,
+        ),
         #[cfg(target_arch = "x86_64")]
         Sysno::newfstatat => sys_fstatat(
             tf.arg0() as _,
