@@ -134,8 +134,8 @@
 /musl/runtest.exe -w entry-static.exe statvfs
 /musl/runtest.exe -w entry-static.exe strverscmp
 /musl/runtest.exe -w entry-static.exe syscall_sign_extend
-@REM /musl/runtest.exe -w entry-static.exe uselocale_0
-@REM /musl/runtest.exe -w entry-static.exe wcsncpy_read_overflow
+# /musl/runtest.exe -w entry-static.exe uselocale_0
+# /musl/runtest.exe -w entry-static.exe wcsncpy_read_overflow
 /musl/runtest.exe -w entry-static.exe wcsstr_false_negative
 /musl/runtest.exe -w entry-dynamic.exe argv
 /musl/runtest.exe -w entry-dynamic.exe basename

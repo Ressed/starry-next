@@ -29,6 +29,7 @@ fn main() {
     let mut i = 0;
     let n = testcases.len();
     for testcase in testcases {
+        i += 1;
         if testcase.starts_with('#') {
             continue;
         }
@@ -42,7 +43,6 @@ fn main() {
         info!("Running user task: {:?}", args);
         let exit_code = entry::run_user_app(&args, &[]);
         info!("User task {:?} exited with code: {:?}", args, exit_code);
-        i += 1;
         if i == 32 {
             ax_println!("#### OS COMP TEST GROUP END basic-musl ####");
             ax_println!("#### OS COMP TEST GROUP END basic-glibc ####");
