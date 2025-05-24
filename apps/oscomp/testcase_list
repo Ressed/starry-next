@@ -1,35 +1,19 @@
-/musl/basic/brk
-/musl/basic/chdir
-/musl/basic/close
-/musl/basic/clone
-/musl/basic/dup2
-/musl/basic/dup
-/musl/basic/execve
-/musl/basic/exit
-/musl/basic/fork
-/musl/basic/fstat
-/musl/basic/getcwd
-/musl/basic/getdents
-/musl/basic/getpid
-/musl/basic/getppid
-/musl/basic/gettimeofday
-/musl/basic/mkdir_
-/musl/basic/mmap
-/musl/basic/munmap
-/musl/basic/mount
-/musl/basic/openat
-/musl/basic/open
+/musl/busybox echo "#### OS COMP TEST GROUP START basic-musl ####"
+/musl/busybox echo "#### OS COMP TEST GROUP START basic-glibc ####"
+/musl/basic/run-all.sh
 /musl/basic/sleep
-/musl/basic/pipe
-/musl/basic/read
-/musl/basic/times
-/musl/basic/umount
-/musl/basic/uname
-/musl/basic/unlink
-/musl/basic/wait
-/musl/basic/waitpid
-/musl/basic/write
-/musl/basic/yield
+/musl/busybox echo "#### OS COMP TEST GROUP END basic-glibc ####"
+/musl/busybox echo "#### OS COMP TEST GROUP END basic-musl ####"
+
+# /musl/busybox echo "#### OS COMP TEST GROUP START busybox-glibc ####"
+# /musl/busybox_testcode.sh
+# /musl/busybox echo "#### OS COMP TEST GROUP END busybox-glibc ####"
+
+
+/musl/busybox echo "#### OS COMP TEST GROUP START libctest-musl ####"
+/musl/busybox echo "#### OS COMP TEST GROUP START libctest-glibc ####"
+# /musl/run-static.sh
+# /musl/run-dynamic.sh
 /musl/runtest.exe -w entry-static.exe argv
 /musl/runtest.exe -w entry-static.exe basename
 /musl/runtest.exe -w entry-static.exe clocale_mbfuncs
@@ -247,3 +231,14 @@
 /musl/runtest.exe -w entry-dynamic.exe uselocale_0
 /musl/runtest.exe -w entry-dynamic.exe wcsncpy_read_overflow
 /musl/runtest.exe -w entry-dynamic.exe wcsstr_false_negative
+/musl/busybox echo "#### OS COMP TEST GROUP END libctest-glibc ####"
+/musl/busybox echo "#### OS COMP TEST GROUP END libctest-musl ####"
+
+/musl/busybox echo "#### OS COMP TEST GROUP START lua-glibc ####"
+/musl/lua_testcode.sh
+/musl/busybox echo "#### OS COMP TEST GROUP END lua-glibc ####"
+
+/musl/busybox echo "#### OS COMP TEST GROUP START iozone-glibc ####"
+/musl/iozone_testcode.sh
+/musl/busybox echo "#### OS COMP TEST GROUP END iozone-glibc ####"
+

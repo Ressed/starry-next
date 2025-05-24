@@ -1,0 +1,10 @@
+# Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+.cargo
+.git
+.github
+.vscode
+.idea
+.cursorignore
+target
+.devcontainer
+.arceos/.github

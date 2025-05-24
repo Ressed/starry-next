@@ -311,8 +311,6 @@ pub fn sys_getcwd(buf: UserPtr<u8>, size: usize) -> LinuxResult<isize> {
     }
 }
 
-
-
 /// when nsec is UTIME_NOW，modify time to now
 pub const UTIME_NOW: usize = 0x3fffffff;
 /// when nsec is UTIME_OMIT，donot modify time
@@ -325,15 +323,16 @@ pub const UTIME_OMIT: usize = 0x3ffffffe;
 pub fn sys_utimensat(
     dir_fd: i32,
     path: UserConstPtr<c_char>,
-    times: UserConstPtr<timespec>,
+    times: UserConstPtr<[timespec; 2]>,
     _flags: i32,
 ) -> LinuxResult<isize> {
     if dir_fd != AT_FDCWD as _ && (dir_fd as isize) < 0 {
         return Err(LinuxError::EBADF); // wrong dir_fd
     }
 
-    let times = times.get_as_slice(2)?;
+    let times = times.get_as_ref().map_err(|_| LinuxError::ENOENT)?;
     let (atime, mtime): (timespec, timespec) = (times[0], times[1]);
+    // let (atime, mtime) = (timespec { tv_sec: 0, tv_nsec: 0 }, timespec { tv_sec: 0, tv_nsec: 0 });
     // FIXME: this is time elapsed since system boot, but not timestamp now
     let current_s = axhal::time::monotonic_time_nanos() as i64 / 1000 / 1000;
     let now = current_s as usize;
@@ -364,7 +363,7 @@ pub fn sys_utimensat(
         };
     } else {
         let file = axfs::fops::File::open(path.get_as_str()?, &axfs::fops::OpenOptions::new())
-            .map_err(|_| LinuxError::ENOTDIR)?;
+            .map_err(|_| LinuxError::ENOENT)?;
         match atime.tv_nsec as _ {
             UTIME_NOW => {
                 _ = file.set_atime(now);

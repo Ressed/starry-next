@@ -7,50 +7,61 @@ extern crate axlog;
 extern crate alloc;
 extern crate axruntime;
 
-use alloc::vec::Vec;
-
 mod entry;
 mod mm;
 mod syscall;
 
+use alloc::{string::String, vec::Vec};
+use axprocess::Process;
+use axtask::current;
+
+fn parse_cmd(cmd: &str) -> Vec<String> {
+    let mut args = Vec::new();
+    let mut current_arg = String::new();
+    let mut in_quotes = false;
+
+    for c in cmd.chars() {
+        match c {
+            '"' => in_quotes = !in_quotes,
+            ' ' if !in_quotes => {
+                if !current_arg.is_empty() {
+                    args.push(current_arg.clone());
+                    current_arg.clear();
+                }
+            }
+            _ => current_arg.push(c),
+        }
+    }
+
+    if !current_arg.is_empty() {
+        args.push(current_arg);
+    }
+
+    args
+}
+
 #[unsafe(no_mangle)]
 fn main() {
-    // 
-    ax_println!("#### OS COMP TEST GROUP START basic-glibc ####");
-    ax_println!("#### OS COMP TEST GROUP START basic-musl ####");
     // Create a init process
-    axprocess::Process::new_init(axtask::current().id().as_u64() as _).build();
+    Process::new_init(current().id().as_u64() as _).build();
 
-    let testcases: Vec<_> = option_env!("AX_TESTCASES_LIST")
+    let testcases = option_env!("AX_TESTCASES_LIST")
         .unwrap_or_else(|| "Please specify the testcases list by making user_apps")
         .split(',')
-        .filter(|&x| !x.is_empty())
-        .collect();
-    let mut i = 0;
-    let n = testcases.len();
+        .filter(|&x| !x.is_empty());
+
     for testcase in testcases {
-        i += 1;
-        if testcase.starts_with('#') {
+        if testcase.is_empty() || testcase.starts_with('#') {
+            // Skip empty lines and comments
             continue;
         }
-        let Some(args) = shlex::split(testcase) else {
-            error!("Failed to parse testcase: {:?}", testcase);
-            continue;
-        };
+        let args = parse_cmd(testcase);
         if args.is_empty() {
             continue;
         }
-        info!("Running user task: {:?}", args);
+        info!("Running user task: {}", testcase);
+        info!("Arguments: {:?}", args);
         let exit_code = entry::run_user_app(&args, &[]);
-        info!("User task {:?} exited with code: {:?}", args, exit_code);
-        if i == 32 {
-            ax_println!("#### OS COMP TEST GROUP END basic-musl ####");
-            ax_println!("#### OS COMP TEST GROUP END basic-glibc ####");
-            ax_println!("#### OS COMP TEST GROUP START libctest-glibc ####");
-            ax_println!("#### OS COMP TEST GROUP START libctest-musl ####");
-        } else if i == n {
-            ax_println!("#### OS COMP TEST GROUP END libctest-musl ####");
-            ax_println!("#### OS COMP TEST GROUP END libctest-glibc ####");
-        }
+        info!("User task {} exited with code: {:?}", testcase, exit_code);
     }
 }

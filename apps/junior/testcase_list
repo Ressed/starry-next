@@ -1,1 +1,26 @@
-/musl/runtest.exe -w entry-static.exe ungetc
+# /musl/busybox echo "#### OS COMP TEST GROUP START basic-musl ####"
+# /musl/busybox echo "#### OS COMP TEST GROUP START basic-glibc ####"
+# /musl/basic/run-all.sh
+# /musl/basic/sleep
+# /musl/busybox echo "#### OS COMP TEST GROUP END basic-glibc ####"
+# /musl/busybox echo "#### OS COMP TEST GROUP END basic-musl ####"
+
+# /musl/busybox echo "#### OS COMP TEST GROUP START busybox-glibc ####"
+# /musl/busybox_testcode.sh
+# /musl/busybox echo "#### OS COMP TEST GROUP END busybox-glibc ####"
+
+
+# /musl/busybox echo "#### OS COMP TEST GROUP START libctest-musl ####"
+# /musl/busybox echo "#### OS COMP TEST GROUP START libctest-glibc ####"
+# /musl/run-static.sh
+# /musl/run-dynamic.sh
+# /musl/busybox echo "#### OS COMP TEST GROUP END libctest-glibc ####"
+# /musl/busybox echo "#### OS COMP TEST GROUP END libctest-musl ####"
+
+# /musl/busybox echo "#### OS COMP TEST GROUP START lua-glibc ####"
+# /musl/lua_testcode.sh
+# /musl/busybox echo "#### OS COMP TEST GROUP END lua-glibc ####"
+
+/musl/busybox echo "#### OS COMP TEST GROUP START iozone-glibc ####"
+/musl/iozone_testcode.sh
+/musl/busybox echo "#### OS COMP TEST GROUP END iozone-glibc ####"
