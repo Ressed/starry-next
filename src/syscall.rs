@@ -83,7 +83,7 @@ fn handle_syscall(tf: &mut TrapFrame, syscall_num: usize) -> isize {
         Sysno::close => sys_close(tf.arg0() as _),
         Sysno::chdir => sys_chdir(tf.arg0().into()),
         Sysno::mkdirat => sys_mkdirat(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
-        Sysno::execve => sys_execve(tf.arg0().into(), tf.arg1().into(), tf.arg2().into()),
+        Sysno::execve => sys_execve(tf, tf.arg0().into(), tf.arg1().into(), tf.arg2().into()),
         Sysno::openat => sys_openat(
             tf.arg0() as _,
             tf.arg1().into(),
