@@ -10,6 +10,20 @@ use crate::{
     ptr::{UserConstPtr, UserPtr, nullable},
 };
 
+#[repr(C)]
+#[allow(non_camel_case_types, dead_code)]
+struct rtc_time {
+    tm_sec: c_int,
+    tm_min: c_int,
+    tm_hour: c_int,
+    tm_mday: c_int,
+    tm_mon: c_int,
+    tm_year: c_int,
+    tm_wday: c_int,
+    tm_yday: c_int,
+    tm_isdst: c_int,
+}
+
 /// The ioctl() system call manipulates the underlying device parameters
 /// of special files.
 ///
@@ -18,8 +32,24 @@ use crate::{
 /// * `op` - The request code. It is of type unsigned long in glibc and BSD,
 ///   and of type int in musl and other UNIX systems.
 /// * `argp` - The argument to the request. It is a pointer to a memory location
-pub fn sys_ioctl(_fd: i32, _op: usize, _argp: UserPtr<c_void>) -> LinuxResult<isize> {
-    warn!("Unimplemented syscall: SYS_IOCTL");
+pub fn sys_ioctl(fd: i32, op: usize, argp: UserPtr<c_void>) -> LinuxResult<isize> {
+    // let f = get_file_like(fd)?;
+    // let stat = f.stat()?;
+    // if op == RTC_RD_TIME as _ && stat.rdev == RTC0_DEVICE_ID {
+    //     let wall = chrono::DateTime::from_timestamp_nanos(axhal::time::wall_time_nanos() as _);
+    //     *argp.cast::<rtc_time>().get_as_mut()? = rtc_time {
+    //         tm_sec: wall.second() as _,
+    //         tm_min: wall.minute() as _,
+    //         tm_hour: wall.hour() as _,
+    //         tm_mday: wall.day() as _,
+    //         tm_mon: wall.month0() as _,
+    //         tm_year: (wall.year() - 1900) as _,
+    //         tm_wday: 0,
+    //         tm_yday: 0,
+    //         tm_isdst: 0,
+    //     };
+    // }
+    info!("sys_ioctl <= fd: {}, op: {}", fd, op);
     Ok(0)
 }
 

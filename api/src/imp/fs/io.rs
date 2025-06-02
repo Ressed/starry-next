@@ -1,8 +1,8 @@
 use core::ffi::{c_char, c_int};
 
-use alloc::vec;
+use alloc::{sync::Arc, vec};
 use axerrno::{LinuxError, LinuxResult};
-use linux_raw_sys::general::iovec;
+use linux_raw_sys::general::{__kernel_off_t, iovec};
 
 use crate::{
     fd::{File, FileLike, get_file_like},
@@ -20,7 +20,9 @@ pub fn sys_read(fd: i32, buf: UserPtr<u8>, len: usize) -> LinuxResult<isize> {
         buf.as_ptr(),
         buf.len()
     );
-    Ok(get_file_like(fd)?.read(buf)? as _)
+    let n = get_file_like(fd)?.read(buf)?;
+    debug!("sys_read <= fd: {}, buf: {:p}, len: {}, n: {}, content: {}", fd, buf.as_ptr(), buf.len(), n, buf[0] as char);
+    Ok(n as _)
 }
 
 pub fn sys_readv(fd: c_int, iov: UserPtr<iovec>, iocnt: usize) -> LinuxResult<isize> {
@@ -72,10 +74,11 @@ pub fn sys_pread64(fd: c_int, buf: UserPtr<u8>, len: usize, offset: u64) -> Linu
 pub fn sys_write(fd: i32, buf: UserConstPtr<u8>, len: usize) -> LinuxResult<isize> {
     let buf = buf.get_as_slice(len)?;
     debug!(
-        "sys_write <= fd: {}, buf: {:p}, len: {}",
+        "sys_write <= fd: {}, buf: {:p}, len: {}, content: {}",
         fd,
         buf.as_ptr(),
-        buf.len()
+        buf.len(),
+        buf[0] as char
     );
     Ok(get_file_like(fd)?.write(buf)? as _)
 }
@@ -132,6 +135,35 @@ where
     }
 
     Ok(total_written)
+}
+
+pub(crate) fn get_as_fs_file(fd: c_int) -> LinuxResult<Arc<File>> {
+    get_file_like(fd)?
+        .into_any()
+        .downcast::<File>()
+        .map_err(|_| LinuxError::EBADF)
+}
+
+pub fn sys_ftruncate(fd: c_int, length: __kernel_off_t) -> LinuxResult<isize> {
+    debug!("sys_ftruncate <= {} {}", fd, length);
+    let f = get_as_fs_file(fd)?;
+    f.inner().truncate(length as _)?;
+    Ok(0)
+}
+
+pub fn sys_fsync(fd: c_int) -> LinuxResult<isize> {
+    debug!("sys_fsync <= {}", fd);
+    return Ok(0);
+    let f = get_as_fs_file(fd)?;
+    f.inner().flush()?;
+    Ok(0)
+}
+
+pub fn sys_fdatasync(fd: c_int) -> LinuxResult<isize> {
+    debug!("sys_fdatasync <= {}", fd);
+    let f = get_as_fs_file(fd)?;
+    f.inner().flush()?;
+    Ok(0)
 }
 
 pub fn sys_sendfile(

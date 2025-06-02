@@ -6,7 +6,7 @@ use starry_core::task::ProcessData;
 
 use crate::{
     ptr::{PtrWrapper, UserPtr},
-    send_signal_process, send_signal_thread,
+    send_signal_process, send_signal_thread, clear_proc_shm
 };
 
 pub fn do_exit(exit_code: i32, group_exit: bool) -> ! {
@@ -33,7 +33,8 @@ pub fn do_exit(exit_code: i32, group_exit: bool) -> ! {
                 data.child_exit_wq.notify_all(false)
             }
         }
-
+        
+        clear_proc_shm(process.pid());
         process.exit();
         // TODO: clear namespace resources
     }

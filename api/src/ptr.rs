@@ -185,6 +185,10 @@ impl<T> UserPtr<T> {
     }
 
     const ACCESS_FLAGS: MappingFlags = MappingFlags::READ.union(MappingFlags::WRITE);
+    
+    pub fn cast<U>(self) -> UserPtr<U> {
+        UserPtr(self.0 as *mut U)
+    }
 
     pub fn address(&self) -> VirtAddr {
         VirtAddr::from_ptr_of(self.0)

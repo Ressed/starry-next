@@ -18,6 +18,8 @@ fn handle_syscall(tf: &mut TrapFrame, syscall_num: usize) -> isize {
     info!("Syscall {}", sysno);
     time_stat_from_user_to_kernel();
     let result = match sysno {
+        #[cfg(target_arch = "x86_64")]
+        Sysno::unlink => sys_unlink(tf.arg0().into()),
         Sysno::read => sys_read(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
         Sysno::readv => sys_readv(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
         Sysno::write => sys_write(tf.arg0() as _, tf.arg1().into(), tf.arg2() as _),
@@ -41,6 +43,26 @@ fn handle_syscall(tf: &mut TrapFrame, syscall_num: usize) -> isize {
             tf.arg1() as _,
             tf.arg2().into(),
             tf.arg3().into(),
+        ),
+        Sysno::ftruncate => sys_ftruncate(tf.arg0() as _, tf.arg1() as _),
+        Sysno::fsync => sys_fsync(tf.arg0() as _),
+        Sysno::fdatasync => sys_fdatasync(tf.arg0() as _),
+
+        #[cfg(target_arch = "x86_64")]
+        Sysno::select => sys_select(
+            tf.arg0() as _,
+            tf.arg1().into(),
+            tf.arg2().into(),
+            tf.arg3().into(),
+            tf.arg4().into(),
+        ),
+        Sysno::pselect6 => sys_pselect6(
+            tf.arg0() as _,
+            tf.arg1().into(),
+            tf.arg2().into(),
+            tf.arg3().into(),
+            tf.arg4().into(),
+            tf.arg5().into(),
         ),
         
         Sysno::mmap => sys_mmap(
@@ -164,8 +186,6 @@ fn handle_syscall(tf: &mut TrapFrame, syscall_num: usize) -> isize {
             tf.arg2().into(),
             tf.arg3() as _,
         ),
-        #[cfg(target_arch = "x86_64")]
-        Sysno::unlink => ignore_unimplemented_syscall(syscall_num),
         Sysno::statfs | Sysno::prlimit64 => {
             ignore_unimplemented_syscall(syscall_num)
         },
@@ -195,6 +215,10 @@ fn handle_syscall(tf: &mut TrapFrame, syscall_num: usize) -> isize {
             tf.arg4() as _,
         ),
         Sysno::sigaltstack => sys_sigaltstack(tf.arg0().into(), tf.arg1().into()),
+        Sysno::shmget => sys_shmget(tf.arg0() as _, tf.arg1() as _, tf.arg2() as _),
+        Sysno::shmat => sys_shmat(tf.arg0() as _, tf.arg1() as _, tf.arg2() as _),
+        Sysno::shmctl => sys_shmctl(tf.arg0() as _, tf.arg1() as _, tf.arg2().into()),
+        Sysno::shmdt => sys_shmdt(tf.arg0() as _,),
         
         Sysno::lseek => sys_lseek(tf.arg0() as _, tf.arg1() as _, tf.arg2() as _),
         _ => {

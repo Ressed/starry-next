@@ -30,6 +30,10 @@ macro_rules_attribute = "0.2"
 num_enum = { version = "0.7", default-features = false }
 static_assertions = "1.1"
 
+lazy_static = { version = "1.5", features = ["spin_no_std"] }
+page_table_multiarch = { git = "https://github.com/Mivik/page_table_multiarch.git", rev = "19ededd" }
+page_table_entry = { git = "https://github.com/Mivik/page_table_multiarch.git", rev = "19ededd" }
+
 axfs_vfs = { git = "https://github.com/Ressed/axfs_crates.git" }
 axio = "0.1.1"
 flatten_objects = "0.2.3"
